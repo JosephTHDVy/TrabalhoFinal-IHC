@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <title>Hauntiary – Criaturas</title>
+</head>
+<body>
+  <header id="topbar">
+    <nav>
+      <a class="nav-btn" href="lista.html"><img src="imgs/NOME.png" alt="Início" height="40"></a>
+      <button class="nav-btn" id="btn-aleatoria" type="button"><img src="https://img.icons8.com/?size=100&id=80024&format=png&color=FFFFFF" alt="Aleatória" height="40"></button>
+      <a class="nav-btn" href="index.html"><img src="https://img.icons8.com/?size=100&id=41414&format=png&color=FFFFFF" alt="Bestiários" height="40"></a>
+    </nav>
+    <form id="busca" role="search">
+      <input id="busca-input" type="search" placeholder="Pesquisar..." aria-label="Pesquisar criatura">
+      <button type="submit" aria-label="Pesquisar">🔍</button>
+    </form>
+  </header>
+
+  <main>
+    <p id="bestiario-ativo" class="ativo"></p>
+    <ul id="criaturas"></ul>
+    <a class="btn-add" href="criatura.html" aria-label="Catalogar nova criatura">💀＋ <span>Nova criatura</span></a>
+  </main>
+
+  <script src="common.js"></script>
+  <script>
+    const b = exigirBestiario();
+    const q = new URLSearchParams(location.search).get("q") || "";
+    $("#busca-input").value = q;
+    $("#bestiario-ativo").textContent = "Bestiário: " + b.nome;
+
+    const ul = $("#criaturas");
+    const itens = b.criaturas.filter((c) => c.nome.toLowerCase().includes(q.toLowerCase()));
+
+    if (!itens.length) {
+      const li = document.createElement("li");
+      li.className = "vazio";
+      li.textContent = q ? "Nenhuma criatura encontrada." : "Este bestiário ainda não tem criaturas.";
+      ul.append(li);
+    }
+
+    itens.forEach((c) => {
+      const li = document.createElement("li");
+      li.className = "card";
+      li.innerHTML = `
+        <div class="img"></div>
+        <div>
+          <h2></h2>
+          <p class="resumo"></p>
+          <div class="acoes">
+            <a class="btn-claro" data-ver>Leia Mais</a>
+            <a class="icone" data-edit aria-label="Editar criatura">✏️ Editar</a>
+          </div>
+        </div>`;
+      const img = li.querySelector(".img");
+      if (c.img) { const i = document.createElement("img"); i.src = c.img; i.alt = ""; img.append(i); }
+      else img.textContent = "👹";
+      li.querySelector("h2").textContent = c.nome;
+      li.querySelector(".resumo").textContent = c.resumo;
+      li.querySelector("[data-ver]").href = "detalhe.html?id=" + encodeURIComponent(c.id);
+      li.querySelector("[data-edit]").href = "criatura.html?id=" + encodeURIComponent(c.id);
+      ul.append(li);
+    });
+  </script>
+</body>
+</html>

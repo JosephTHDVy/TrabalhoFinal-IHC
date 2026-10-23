@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <title>Hauntiary – Seleção de catálogo</title>
+</head>
+<body>
+  <main>
+    <h1>Seleção de catálogo</h1>
+    <ul id="bestiarios" class="coluna"></ul>
+    <form id="form-bestiario" class="coluna">
+      <input id="novo-bestiario" class="campo" placeholder="Novo Bestiário" aria-label="Nome do novo bestiário">
+      <button class="btn-vermelho" type="submit">Adicionar Bestiário</button>
+    </form>
+  </main>
+
+  <script src="common.js"></script>
+  <script>
+    function render() {
+      const ul = $("#bestiarios");
+      ul.innerHTML = "";
+      carregar().bestiarios.forEach((b) => {
+        const li = document.createElement("li");
+        const btn = document.createElement("button");
+        btn.className = "btn-bestiario";
+        btn.textContent = b.nome;
+        btn.onclick = () => {
+          if (atualizar((d) => (d.ativo = b.id))) location.href = "lista.html";
+        };
+        li.append(btn);
+        ul.append(li);
+      });
+    }
+
+    $("#form-bestiario").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const nome = $("#novo-bestiario").value.trim();
+      if (!nome) return aviso("Digite um nome para o bestiário.");
+      atualizar((d) => d.bestiarios.push({ id: novoId(), nome, criaturas: [] }));
+      $("#novo-bestiario").value = "";
+      render();
+      aviso(`Bestiário "${nome}" criado.`);
+    });
+
+    render();
+  </script>
+</body>
+</html>

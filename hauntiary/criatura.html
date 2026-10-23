@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <title>Hauntiary – Catalogar criatura</title>
+</head>
+<body>
+  <header id="topbar">
+    <nav>
+      <a class="nav-btn" href="lista.html"><img src="imgs/NOME.png" alt="Início" height="40"></a>
+      <button class="nav-btn" id="btn-aleatoria" type="button"><img src="https://img.icons8.com/?size=100&id=80024&format=png&color=FFFFFF" alt="Aleatória" height="40"></button>
+      <a class="nav-btn" href="index.html"><img src="https://img.icons8.com/?size=100&id=41414&format=png&color=FFFFFF" alt="Bestiários" height="40"></a>
+    </nav>
+    <form id="busca" role="search">
+      <input id="busca-input" type="search" placeholder="Pesquisar..." aria-label="Pesquisar criatura">
+      <button type="submit" aria-label="Pesquisar">🔍</button>
+    </form>
+  </header>
+
+
+  <main>
+    <a class="voltar" href="lista.html" aria-label="Voltar">←</a>
+    <h1 id="form-titulo">Catalogar nova criatura</h1>
+
+    <form id="form-criatura" class="grade-form" novalidate>
+      <div class="lateral">
+        <label class="upload" for="arquivo">
+          <img id="preview" alt="" hidden>
+          <span id="upload-icone">🖼️＋<br>Adicionar imagem</span>
+        </label>
+        <input id="arquivo" type="file" accept="image/*" hidden>
+        <div class="acoes-form">
+          <button type="button" id="btn-descartar" class="btn-vermelho">🗑️ Descartar</button>
+          <button type="submit" class="btn-escuro">💾 Salvar</button>
+        </div>
+        <button type="button" id="btn-excluir" class="btn-vermelho" hidden>Excluir criatura</button>
+      </div>
+
+      <div class="campos">
+        <input id="f-nome" class="campo" placeholder="Nome da criatura" aria-label="Nome da criatura">
+        <p id="erro-nome" class="erro" role="alert" hidden>Informe o nome da criatura para salvar.</p>
+        <textarea id="f-resumo" class="campo" rows="2" placeholder="Resumo" aria-label="Resumo"></textarea>
+        <textarea id="f-descricao" class="campo" rows="9" placeholder="Descrição" aria-label="Descrição"></textarea>
+      </div>
+    </form>
+  </main>
+
+  <script src="common.js"></script>
+  <script>
+    const b = exigirBestiario();
+    const id = new URLSearchParams(location.search).get("id");
+    const existente = id ? b.criaturas.find((c) => c.id === id) : null;
+    let imagem = existente ? existente.img : "";
+
+    if (existente) {
+      $("#form-titulo").textContent = "Editar criatura";
+      $("#f-nome").value = existente.nome;
+      $("#f-resumo").value = existente.resumo;
+      $("#f-descricao").value = existente.descricao;
+      $("#btn-excluir").hidden = false;
+    }
+
+    function preview() {
+      $("#preview").hidden = !imagem;
+      $("#upload-icone").hidden = !!imagem;
+      if (imagem) $("#preview").src = imagem;
+    }
+    preview();
+
+    // Reduz a imagem para caber no localStorage
+    function reduzir(file, max, cb) {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const r = Math.min(1, max / Math.max(img.width, img.height));
+        const cv = document.createElement("canvas");
+        cv.width = Math.round(img.width * r);
+        cv.height = Math.round(img.height * r);
+        cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+        URL.revokeObjectURL(url);
+        cb(cv.toDataURL("image/jpeg", 0.8));
+      };
+      img.onerror = () => aviso("Escolha um arquivo de imagem válido.");
+      img.src = url;
+    }
+
+    $("#arquivo").addEventListener("change", (e) => {
+      const f = e.target.files[0];
+      if (f) reduzir(f, 600, (data) => { imagem = data; preview(); });
+    });
+
+    $("#form-criatura").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const nome = $("#f-nome").value.trim();
+      if (!nome) { $("#erro-nome").hidden = false; $("#f-nome").focus(); return; }
+      const dados = {
+        id: existente ? existente.id : novoId(),
+        nome,
+        resumo: $("#f-resumo").value.trim(),
+        descricao: $("#f-descricao").value.trim(),
+        img: imagem
+      };
+      const ok = atualizar((d) => {
+        const bb = d.bestiarios.find((x) => x.id === d.ativo);
+        const i = bb.criaturas.findIndex((c) => c.id === dados.id);
+        if (i >= 0) bb.criaturas[i] = dados; else bb.criaturas.push(dados);
+      });
+      if (ok) irComAviso("lista.html", "Criatura salva com sucesso.");
+    });
+
+    $("#btn-descartar").onclick = () => {
+      if (confirm("Descartar o que foi preenchido? As alterações serão perdidas.")) location.href = "lista.html";
+    };
+
+    $("#btn-excluir").onclick = () => {
+      if (!confirm("Excluir esta criatura? Esta ação não pode ser desfeita.")) return;
+      const ok = atualizar((d) => {
+        const bb = d.bestiarios.find((x) => x.id === d.ativo);
+        bb.criaturas = bb.criaturas.filter((c) => c.id !== id);
+      });
+      if (ok) irComAviso("lista.html", "Criatura excluída.");
+    };
+  </script>
+</body>
+</html>

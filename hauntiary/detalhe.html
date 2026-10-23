@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <title>Hauntiary – Detalhe</title>
+</head>
+<body>
+   <header id="topbar">
+    <nav>
+      <a class="nav-btn" href="lista.html"><img src="imgs/NOME.png" alt="Início" height="40"></a>
+      <button class="nav-btn" id="btn-aleatoria" type="button"><img src="https://img.icons8.com/?size=100&id=80024&format=png&color=FFFFFF" alt="Aleatória" height="40"></button>
+      <a class="nav-btn" href="index.html"><img src="https://img.icons8.com/?size=100&id=41414&format=png&color=FFFFFF" alt="Bestiários" height="40"></a>
+    </nav>
+    <form id="busca" role="search">
+      <input id="busca-input" type="search" placeholder="Pesquisar..." aria-label="Pesquisar criatura">
+      <button type="submit" aria-label="Pesquisar">🔍</button>
+    </form>
+  </header>
+
+
+  <main>
+    <a class="voltar" href="lista.html" aria-label="Voltar">←</a>
+    <h1 id="d-nome" class="forte"></h1>
+    <article class="card grande">
+      <div class="img" id="d-img"></div>
+      <div>
+        <p id="d-resumo" class="resumo"></p>
+        <p id="d-descricao" class="descricao"></p>
+        <a class="icone" id="d-editar">✏️ Editar</a>
+      </div>
+    </article>
+  </main>
+
+  <script src="common.js"></script>
+  <script>
+    const b = exigirBestiario();
+    const id = new URLSearchParams(location.search).get("id");
+    const c = b.criaturas.find((x) => x.id === id);
+    if (!c) location.replace("lista.html");
+
+    document.title = "Hauntiary – " + c.nome;
+    $("#d-nome").textContent = c.nome;
+    $("#d-resumo").textContent = c.resumo;
+    $("#d-descricao").textContent = c.descricao;
+    $("#d-editar").href = "criatura.html?id=" + encodeURIComponent(c.id);
+
+    const img = $("#d-img");
+    if (c.img) { const i = document.createElement("img"); i.src = c.img; i.alt = ""; img.append(i); }
+    else img.textContent = "👹";
+  </script>
+</body>
+</html>
